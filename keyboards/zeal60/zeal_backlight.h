@@ -78,4 +78,7 @@ void backlight_set_key_color( uint8_t row, uint8_t column, HSV hsv );
 
 void backlight_test_led( uint8_t index, bool red, bool green, bool blue );
 
+uint8_t increment( uint8_t value, uint8_t step, uint8_t min );
+uint8_t decrement( uint8_t value, uint8_t step, uint8_t min );
+
 #endif //ZEAL_BACKLIGHT_H
