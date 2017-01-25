@@ -508,7 +508,7 @@ void backlight_effect_cycle_up_down_heat(void)
 	uint8_t offset = g_tick & 0xFF;
 	HSV hsv = { .h = 0, .s = 255, .v = g_config.brightness };
 	RGB rgb;
-	Point point;ujn
+	Point point;
 
 	uint16_t sum_of_keys = 0;
 	for (int i=0; i < 72; i++) {
