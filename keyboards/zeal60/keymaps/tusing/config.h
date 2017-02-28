@@ -35,6 +35,8 @@
 
 // Scale brightnes according to BRIGHTNESS_CORRECTION_TABLE in quantum/rgblight.c.
 // This allows to mitigate uneven brightness from LED underglow strips.
-// #define LED_BRIGHTNESS_CORRECTION
+#define LED_BRIGHTNESS_CORRECTION
+
+#define PREVENT_STUCK_MODIFIERS
 
 #endif

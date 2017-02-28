@@ -83,6 +83,7 @@ void eeconfig_update_rgblight_default(void);
 void eeconfig_debug_rgblight(void);
 
 void sethsv(uint16_t hue, uint8_t sat, uint8_t val, LED_TYPE *led1);
+void sethsv_antigreen(uint16_t hue, uint8_t sat, uint8_t val, LED_TYPE *led1);
 void setrgb(uint8_t r, uint8_t g, uint8_t b, LED_TYPE *led1);
 void rgblight_sethsv_noeeprom(uint16_t hue, uint8_t sat, uint8_t val);
 
@@ -98,6 +99,7 @@ void rgblight_timer_toggle(void);
 void rgblight_effect_breathing(uint8_t interval);
 void rgblight_effect_rainbow_mood(uint8_t interval);
 void rgblight_effect_rainbow_swirl(uint8_t interval);
+void rgblight_effect_rainbow_swirl_antigreen(uint8_t interval);
 void rgblight_effect_snake(uint8_t interval);
 void rgblight_effect_knight(uint8_t interval);
 void rgblight_effect_christmas(void);

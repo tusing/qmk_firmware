@@ -11,7 +11,7 @@
 #include "zeal_color.h"
 #include "IS31FL3731_driver.h"
 
-#define BACKLIGHT_EFFECT_MAX 10
+#define BACKLIGHT_EFFECT_MAX 11
 
 zeal_backlight_config g_config = {
 	.use_split_backspace = BACKLIGHT_USE_SPLIT_BACKSPACE,
@@ -362,6 +362,7 @@ void backlight_effect_gradient_up_down(void)
 	}
 }
 
+
 void backlight_effect_raindrops(bool initialize)
 {
 	int16_t h1 = g_config.color_1.h;
@@ -475,6 +476,37 @@ void backlight_effect_cycle_up_down(void)
 		hsv.h = point.y + offset + offset2;
 		rgb = hsv_to_rgb( hsv );
 		backlight_set_color( i, rgb.r, rgb.g, rgb.b );
+	}
+}
+
+void backlight_effect_cycle_up_down_antigreen(void)
+{
+	uint8_t offset = g_tick & 0xFF;
+	HSV hsv = { .h = 0, .s = 255, .v = g_config.brightness };
+	RGB rgb;
+	Point point;
+	uint8_t new_green;
+
+	for ( int i=0; i<72; i++ )
+	{
+		uint16_t offset2 = g_key_hit[i]<<2;
+		// stabilizer LEDs use spacebar hits
+		if ( i == 36+6 || i == 54+13 || // LC6, LD13
+				( g_config.use_7u_spacebar && i == 54+14 ) ) // LD14
+		{
+			offset2 = g_key_hit[36+0]<<2;
+		}
+		offset2 = (offset2<=63) ? (63-offset2) : 0;
+
+		map_led_to_point( i, &point );
+		// Relies on hue being 8-bit and wrapping
+		hsv.h = point.y + offset + offset2;
+		rgb = hsv_to_rgb( hsv );
+
+		new_green = (uint8_t)(rgb.g*0.75);
+		backlight_set_color( i, decrement(increment(rgb.r, new_green, 255), offset2*4, 0),
+								increment(offset2*2, offset2*2, 255), 
+								decrement(increment(rgb.b, new_green, 255), offset2*4, 0));
 	}
 }
 
@@ -691,12 +723,15 @@ ISR(TIMER3_COMPA_vect)
 			backlight_effect_cycle_up_down();
 			break;
 		case 8:
-			backlight_effect_cycle_up_down_heat();
+			backlight_effect_cycle_up_down_antigreen();
 			break;
 		case 9:
-			backlight_effect_jellybean_raindrops( initialize );
+			backlight_effect_cycle_up_down_heat();
 			break;
 		case 10:
+			backlight_effect_jellybean_raindrops( initialize );
+			break;
+		case 11:
 		default:
 			backlight_effect_custom();
 			break;

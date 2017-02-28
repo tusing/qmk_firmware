@@ -58,7 +58,7 @@ const uint8_t RGBLED_BREATHING_TABLE[] PROGMEM = {
 
 const float BRIGHTNESS_CORRECTION_TABLE[] PROGMEM = {
     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
-    1.0, 1.0, 1.0, 1.0,
+    3.0, 3.0, 3.0, 3.0,
     1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0,
     1.0, 1.0, 1.0, 1.0
 };
@@ -131,6 +131,58 @@ void sethsv(uint16_t hue, uint8_t sat, uint8_t val, LED_TYPE *led1) {
 
   setrgb(r, g, b, led1);
 }
+
+void sethsv_antigreen(uint16_t hue, uint8_t sat, uint8_t val, LED_TYPE *led1) {
+  uint8_t r = 0, g = 0, b = 0, base, color;
+
+  if (sat == 0) { // Acromatic color (gray). Hue doesn't mind.
+    r = val;
+    g = val;
+    b = val;
+  } else {
+    base = ((255 - sat) * val) >> 8;
+    color = (val - base) * (hue % 60) / 60;
+
+    switch (hue / 60) {
+      case 0:
+        r = val;
+        g = base;
+        b = val - color;
+        break;
+      case 1:
+        r = val - color;
+        g = base;
+        b = base + color;
+        break;
+      case 2:
+        r = base;
+        g = base + color;
+        b = val;
+        break;
+      case 3:
+        r = base;
+        g = val - color;
+        b = val;
+        break;
+      case 4:
+        r = base + color;
+        g = base;
+        b = val;
+        break;
+      case 5:
+        r = val;
+        g = base;
+        b = val;
+        break;
+    }
+  }
+  r = pgm_read_byte(&DIM_CURVE[r]);
+  g = pgm_read_byte(&DIM_CURVE[g]);
+  b = pgm_read_byte(&DIM_CURVE[b]);
+
+  setrgb(r, g, b, led1);
+}
+
 
 void setrgb(uint8_t r, uint8_t g, uint8_t b, LED_TYPE *led1) {
   (*led1).r = r;
@@ -516,8 +568,8 @@ void rgblight_task(void) {
       // mode = 9 to 14, rainbow swirl mode
       rgblight_effect_rainbow_swirl(rgblight_config.mode - 9);
     } else if (rgblight_config.mode >= 15 && rgblight_config.mode <= 20) {
-      // mode = 15 to 20, snake mode
-      rgblight_effect_snake(rgblight_config.mode - 15);
+      // mode = 15 to 20, rgblight_effect_rainbow_swirl_antigreen mode
+      rgblight_effect_rainbow_swirl_antigreen(rgblight_config.mode - 15);
     } else if (rgblight_config.mode >= 21 && rgblight_config.mode <= 23) {
       // mode = 21 to 23, knight mode
       rgblight_effect_knight(rgblight_config.mode - 21);
@@ -552,6 +604,7 @@ void rgblight_effect_rainbow_mood(uint8_t interval) {
   rgblight_sethsv_noeeprom(current_hue, rgblight_config.sat, rgblight_config.val);
   current_hue = (current_hue + 1) % 360;
 }
+
 void rgblight_effect_rainbow_swirl(uint8_t interval) {
   static uint16_t current_hue = 0;
   static uint16_t last_timer = 0;
@@ -577,6 +630,33 @@ void rgblight_effect_rainbow_swirl(uint8_t interval) {
     }
   }
 }
+
+void rgblight_effect_rainbow_swirl_antigreen(uint8_t interval) {
+  static uint16_t current_hue = 0;
+  static uint16_t last_timer = 0;
+  uint16_t hue;
+  uint8_t i;
+  if (timer_elapsed(last_timer) < pgm_read_byte(&RGBLED_RAINBOW_MOOD_INTERVALS[interval / 2])) {
+    return;
+  }
+  last_timer = timer_read();
+  for (i = 0; i < RGBLED_NUM; i++) {
+    hue = (360 / RGBLED_NUM * i + current_hue) % 360;
+    sethsv_antigreen(hue, rgblight_config.sat, rgblight_config.val, (LED_TYPE *)&led[i]);
+  }
+  rgblight_set();
+
+  if (interval % 2) {
+    current_hue = (current_hue + 1) % 360;
+  } else {
+    if (current_hue - 1 < 0) {
+      current_hue = 359;
+    } else {
+      current_hue = current_hue - 1;
+    }
+  }
+}
+
 void rgblight_effect_snake(uint8_t interval) {
   static uint8_t pos = 0;
   static uint16_t last_timer = 0;
