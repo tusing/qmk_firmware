@@ -1,13 +1,11 @@
 #!/bin/bash
-
-printf "Making the {$1} Zeal60 keymap..."
-
-printf "\n\n============ DIFF =============\n"
-git diff
-
 printf "\n\n========== BUILDING ===========\n"
-cd keyboards/zeal60/ && make $1 && cd ../../
-
+:${1:=tusing}
+set -e
+printf "Making the $1 Zeal60 keymap...\n"
+cd keyboards/zeal60/
+make $1
+cd ../../
 
 flash_keymap()
 {
@@ -15,7 +13,7 @@ flash_keymap()
     printf "You have 5 seconds to put your keyboard into programming mode before flashing.\n\n"
     sleep 5
     dfu-programmer atmega32u4 erase --force
-    dfu-programmer atmega32u4 flash zeal60_tusing.hex
+    dfu-programmer atmega32u4 flash "zeal60_{$1}.hex"
     dfu-programmer atmega32u4 reset
 
     printf "\n\n==========  KEYMAP  ============\n"
