@@ -1,12 +1,12 @@
 #!/bin/bash
 
-printf "Making the tusing keymap..."
+printf "Making the {$1} Zeal60 keymap..."
 
 printf "\n\n============ DIFF =============\n"
 git diff
 
 printf "\n\n========== BUILDING ===========\n"
-cd keyboards/zeal60/ && make tusing && cd ../../
+cd keyboards/zeal60/ && make $1 && cd ../../
 
 
 flash_keymap()
